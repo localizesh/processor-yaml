@@ -14,7 +14,7 @@ enum quotesTypes {
   double = "double",
 }
 
-const astToString = (rootMdast: Element): string => {
+const astToString = (rootAst: Element): string => {
   const astToStringRecursive = (ast: any): Element => {
     let result: any;
     const isTableTag = ast?.tagName === "table";
@@ -31,9 +31,9 @@ const astToString = (rootMdast: Element): string => {
     } else if (yamlSequenceTags.includes(ast?.tagName)) {
       const children = ast.children.map((value: Element) => {
         const str: any = astToStringRecursive(
-          value.tagName === "li" ?
-            ("children" in value.children[0] ? value.children[0].children[0] : value.children[0]) :
-            value
+            value.tagName === "li" ?
+                ("children" in value.children[0] ? value.children[0].children[0] : value.children[0]) :
+                value
         );
         return str;
       });
@@ -48,14 +48,14 @@ const astToString = (rootMdast: Element): string => {
       if (isValueChildNumber) valueChild.value = Number(valueChild.value);
       if (quotes && valueChild.value && quoteCustomCodes[quotes]) {
         valueChild.value =
-          quoteCustomCodes[quotes] +
-          valueChild.value +
-          quoteCustomCodes[quotes];
+            quoteCustomCodes[quotes] +
+            valueChild.value +
+            quoteCustomCodes[quotes];
       } else if (valueChild.value) {
         valueChild.value =
-          quoteCustomCodes.without +
-          valueChild.value +
-          quoteCustomCodes.without;
+            quoteCustomCodes.without +
+            valueChild.value +
+            quoteCustomCodes.without;
       }
 
       result = { [keyChild.value]: astToStringRecursive(valueChild) };
@@ -65,7 +65,7 @@ const astToString = (rootMdast: Element): string => {
     return result;
   };
 
-  const yamlObject: Object = astToStringRecursive(rootMdast);
+  const yamlObject: Object = astToStringRecursive(rootAst);
 
   let yamlString: string = jsYaml.dump(yamlObject, { lineWidth: -1 });
   yamlString = replaceCustomQuotes(yamlString);
@@ -75,7 +75,7 @@ const astToString = (rootMdast: Element): string => {
 
 const stringToAst = (rootString: string) => {
   const yamlObject = jsYaml.load(rootString, { schema: CORE_SCHEMA });
-  const stringToMdastRecursive: any = (yaml: any) => {
+  const stringToAstRecursive: any = (yaml: any) => {
     const isSeq: boolean = Array.isArray(yaml);
     const isMap: boolean = isPlainObject(yaml);
 
@@ -88,9 +88,9 @@ const stringToAst = (rootString: string) => {
             type: "element",
             tagName: "tbody",
             children: getPropertiesInYamlObj(
-              yaml,
-              stringToMdastRecursive,
-              rootString
+                yaml,
+                stringToAstRecursive,
+                rootString
             ),
             properties: {},
           },
@@ -109,7 +109,7 @@ const stringToAst = (rootString: string) => {
               {
                 type: "element",
                 tagName: "p",
-                children:  [stringToMdastRecursive(value)],
+                children:  [stringToAstRecursive(value)],
                 properties: {},
               }
             ],
@@ -125,7 +125,7 @@ const stringToAst = (rootString: string) => {
       };
     }
   };
-  return stringToMdastRecursive(yamlObject);
+  return stringToAstRecursive(yamlObject);
 };
 
 const getQuotesType = (yaml: string, rootString: string) => {
@@ -163,9 +163,9 @@ const isPlainObject = function (obj: Object): boolean {
 };
 
 function getPropertiesInYamlObj(
-  yaml: { [key: string]: string },
-  stringToAstRecursive: any,
-  rootString: string
+    yaml: { [key: string]: string },
+    stringToAstRecursive: any,
+    rootString: string
 ) {
   const children = [];
   for (let key in yaml) {
