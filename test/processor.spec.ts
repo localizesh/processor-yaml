@@ -3,7 +3,7 @@ import {assert} from "chai";
 import fs from "fs";
 import path from "path";
 
-import YamlProcessor from "../src/processor.js";
+import YamlProcessor from "../src/index.js";
 
 const processor = new YamlProcessor("test");
 
@@ -21,12 +21,11 @@ function processAndCompare(filename: string) {
   console.log(filename);
 }
 
-describe('MdProcessorTest', function() {
+describe('YamlProcessorTest', function() {
   it('documents should be equal', function() {
     processAndCompare('frontmatter.yaml');
     processAndCompare('microcopy.yml');
     processAndCompare('dependabot.yml');
-
   });
 });
 
