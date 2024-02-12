@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
-    "@types/hast": "^3.0.3",
+    "@types/hast": "^3.0.4",
     "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.6",
     "chai": "^5.0.3",
