@@ -22,7 +22,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.6",
     "chai": "^5.0.3",
-    "mocha": "^10.2.0",
+    "mocha": "^10.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
