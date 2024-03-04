@@ -18,10 +18,11 @@ function astToDocument(tree: HastRoot, ctx: Context): Document {
     const layout: Layout = { type: "root", children: [{...tree as LayoutNode}] };
     const setSegment = (node: any) => {
         const tags = node.children[0].tags;
-        const id: string = idGenerator.generateId(node.children[0].value, tags)
+        const text = node.children[0].value !== null ? node.children[0].value : '';
+        const id: string = idGenerator.generateId(text, tags)
         const segment: Segment = {
             id,
-            text: node.children[0].value || "",
+            text,
             ...(tags && { tags }),
         };
 
