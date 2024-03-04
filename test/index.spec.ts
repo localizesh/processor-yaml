@@ -23,6 +23,7 @@ function processAndCompare(filename: string) {
 
 describe('YamlProcessorTest', function() {
   it('documents should be equal', function() {
+    processAndCompare('test.yaml');
     processAndCompare('frontmatter.yaml');
     processAndCompare('microcopy.yml');
     processAndCompare('dependabot.yml');
