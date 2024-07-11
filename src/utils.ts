@@ -1,5 +1,6 @@
 import jsYaml, { CORE_SCHEMA } from "js-yaml";
-import { Element } from "hast";
+import {LayoutElement, LayoutRoot} from "@localizesh/sdk";
+
 
 const yamlSequenceTags = ["ul", "li"];
 
@@ -14,8 +15,8 @@ enum quotesTypes {
   double = "double",
 }
 
-const astToString = (rootAst: Element): string => {
-  const astToStringRecursive = (ast: any): Element => {
+const astToString = (rootAst: LayoutRoot): string => {
+  const astToStringRecursive = (ast: any): LayoutElement => {
     let result: any;
     const isTableTag = ast?.tagName === "table";
     const isRoot = ast?.type === "root";
@@ -25,11 +26,11 @@ const astToString = (rootAst: Element): string => {
       return astToStringRecursive(table)
     } else if (isTableTag) {
       const tbody = ast?.children[0];
-      result = tbody.children.reduce((result: {}, value: Element) => {
+      result = tbody.children.reduce((result: {}, value: LayoutElement) => {
         return { ...result, ...astToStringRecursive(value) };
       }, {});
     } else if (yamlSequenceTags.includes(ast?.tagName)) {
-      const children = ast.children.map((value: Element) => {
+      const children = ast.children.map((value: LayoutElement) => {
         const str: any = astToStringRecursive(
             value.tagName === "li" ?
                 ("children" in value.children[0] ? value.children[0].children[0] : value.children[0]) :
@@ -73,7 +74,7 @@ const astToString = (rootAst: Element): string => {
   return yamlString;
 };
 
-const stringToAst = (rootString: string) => {
+const stringToAst = (rootString: string): LayoutRoot => {
   const yamlObject = jsYaml.load(rootString, { schema: CORE_SCHEMA });
   const stringToAstRecursive: any = (yaml: any) => {
     const isSeq: boolean = Array.isArray(yaml);
@@ -101,7 +102,7 @@ const stringToAst = (rootString: string) => {
       return {
         type: "element",
         tagName: "ul",
-        children: yaml.map((value: Element) => {
+        children: yaml.map((value: LayoutElement) => {
           return {
             type: "element",
             tagName: "li",
@@ -207,8 +208,8 @@ function getPropertiesInYamlObj(
 }
 
 const yaml: {
-  astToString: (rootHast: Element) => string;
-  stringToAst: (rootString: string) => any;
+  astToString: (rootHast: LayoutRoot) => string;
+  stringToAst: (rootString: string) => LayoutRoot;
 } = {
   astToString,
   stringToAst,
