@@ -13,13 +13,12 @@
     "test": "mocha"
   },
   "dependencies": {
+    "@localizesh/sdk": "^0.2.0",
     "js-yaml": "^4.1.0",
-    "unist-util-visit-parents": "^6.0.1",
-    "@localizeio/lib": "^0.6.0"
+    "unist-util-visit-parents": "^6.0.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.14",
-    "@types/hast": "^3.0.4",
     "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.6",
     "chai": "^5.1.0",

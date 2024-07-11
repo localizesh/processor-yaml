@@ -1,21 +1,13 @@
-import { Root as HastRoot } from "hast";
-import {
-    Document,
-    Layout,
-    LayoutNode,
-    Processor,
-    Segment,
-    Context,
-    IdGenerator
-} from "@localizeio/lib";
 import {visitParents} from "unist-util-visit-parents";
 import yaml from "./utils.js";
 import {SegmentsMap} from "./types";
+import {Document, Context, IdGenerator, LayoutRoot, Segment, Processor} from "@localizesh/sdk";
 
-function astToDocument(tree: HastRoot, ctx: Context): Document {
-    const idGenerator: IdGenerator = new IdGenerator(ctx);
+
+function astToDocument(layout: LayoutRoot, ctx: Context): Document {
+    const idGenerator: IdGenerator = new IdGenerator();
     const segments: Segment[] = [];
-    const layout: Layout = { type: "root", children: [{...tree as LayoutNode}] };
+
     const setSegment = (node: any) => {
         const tags = node.children[0].tags;
         const text = node.children[0].value !== null ? node.children[0].value : '';
