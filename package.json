@@ -1,6 +1,6 @@
 {
-  "name": "@localizeio/yaml",
-  "repository": "localizeio/yaml",
+  "name": "@localizesh/processor-yaml",
+  "repository": "localizesh/processor-yaml",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,15 +18,12 @@
     "unist-util-visit-parents": "^6.0.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.14",
+    "@types/chai": "^4.3.16",
     "@types/js-yaml": "^4.0.9",
-    "@types/mocha": "^10.0.6",
-    "chai": "^5.1.0",
-    "mocha": "^10.4.0",
+    "@types/mocha": "^10.0.7",
+    "chai": "^5.1.1",
+    "mocha": "^10.6.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "typescript": "^5.5.3"
   }
 }
