@@ -74,51 +74,53 @@ const astToString = (rootAst: LayoutRoot): string => {
   return yamlString;
 };
 
-const stringToAst = (rootString: string): LayoutElement => {
+const stringToAst = (rootString: string): LayoutRoot => {
   const yamlObject = jsYaml.load(rootString, { schema: CORE_SCHEMA });
   const stringToAstRecursive: any = (yaml: any) => {
     const isSeq: boolean = Array.isArray(yaml);
     const isMap: boolean = isPlainObject(yaml);
 
     if (isMap) {
-      return {
-        type: "yaml",
-        tagName: "table",
-        children: [
-          {
-            type: "element",
-            tagName: "tbody",
-            children: getPropertiesInYamlObj(
-                yaml,
-                stringToAstRecursive,
-                rootString
-            ),
-            properties: {},
-          },
-        ],
-        properties: {},
-      };
+      return { type: "root", children: [{
+          type: "yaml",
+          tagName: "table",
+          children: [
+            {
+              type: "element",
+              tagName: "tbody",
+              children: getPropertiesInYamlObj(
+                  yaml,
+                  stringToAstRecursive,
+                  rootString
+              ),
+              properties: {},
+            },
+          ],
+          properties: {},
+        }]
+      }
     } else if (isSeq) {
-      return {
-        type: "element",
-        tagName: "ul",
-        children: yaml.map((value: LayoutElement) => {
-          return {
-            type: "element",
-            tagName: "li",
-            children: [
-              {
-                type: "element",
-                tagName: "p",
-                children:  [stringToAstRecursive(value)],
-                properties: {},
-              }
-            ],
-            properties: {},
-          };
-        }),
-        properties: {},
-      };
+      return { type: "root", children: [{
+          type: "element",
+          tagName: "ul",
+          children: yaml.map((value: LayoutElement) => {
+            return {
+              type: "element",
+              tagName: "li",
+              children: [
+                {
+                  type: "element",
+                  tagName: "p",
+                  children:  [stringToAstRecursive(value)],
+                  properties: {},
+                }
+              ],
+              properties: {},
+            };
+          }),
+          properties: {}
+        }]
+      }
     } else {
       return {
         type: "text",
@@ -209,7 +211,7 @@ function getPropertiesInYamlObj(
 
 const yaml: {
   astToString: (rootHast: LayoutRoot) => string;
-  stringToAst: (rootString: string) => LayoutElement;
+  stringToAst: (rootString: string) => LayoutRoot;
 } = {
   astToString,
   stringToAst,

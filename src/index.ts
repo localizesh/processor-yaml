@@ -1,7 +1,7 @@
 import {visitParents} from "unist-util-visit-parents";
 import yaml from "./utils.js";
 import {SegmentsMap} from "./types";
-import {Document, Context, IdGenerator, LayoutRoot, Segment, Processor, LayoutElement} from "@localizesh/sdk";
+import {Document, Context, IdGenerator, LayoutRoot, Segment, Processor} from "@localizesh/sdk";
 
 
 function astToDocument(layout: LayoutRoot, ctx: Context): Document {
@@ -69,9 +69,9 @@ class YamlProcessor implements Processor {
     }
 
     parse(res: string): Document {
-        const ast: LayoutElement = yaml.stringToAst(res);
+        const ast: LayoutRoot = yaml.stringToAst(res);
 
-        return astToDocument({ type: "root", children: [ast] }, this.context);
+        return astToDocument(ast, this.context);
     }
 
     stringify(data: Document): string {
