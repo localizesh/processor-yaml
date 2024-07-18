@@ -69,7 +69,7 @@ class YamlProcessor implements Processor {
     }
 
     parse(res: string): Document {
-        const ast = yaml.stringToAst(res);
+        const ast: LayoutRoot = yaml.stringToAst(res);
 
         return astToDocument(ast, this.context);
     }
