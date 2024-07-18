@@ -74,7 +74,7 @@ const astToString = (rootAst: LayoutRoot): string => {
   return yamlString;
 };
 
-const stringToAst = (rootString: string): LayoutRoot => {
+const stringToAst = (rootString: string): LayoutElement => {
   const yamlObject = jsYaml.load(rootString, { schema: CORE_SCHEMA });
   const stringToAstRecursive: any = (yaml: any) => {
     const isSeq: boolean = Array.isArray(yaml);
@@ -209,7 +209,7 @@ function getPropertiesInYamlObj(
 
 const yaml: {
   astToString: (rootHast: LayoutRoot) => string;
-  stringToAst: (rootString: string) => LayoutRoot;
+  stringToAst: (rootString: string) => LayoutElement;
 } = {
   astToString,
   stringToAst,
