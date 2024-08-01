@@ -1,9 +1,7 @@
 import {visitParents} from "unist-util-visit-parents";
 import yaml from "./utils.js";
 import {SegmentsMap} from "./types";
-import {Document, IdGenerator, LayoutRoot, Segment, Processor} from "@localizesh/sdk";
-import {Context} from "@localizesh/sdk/dist/types";
-
+import {Context, Document, IdGenerator, LayoutRoot, Segment, Processor} from "@localizesh/sdk";
 
 function astToDocument(layout: LayoutRoot, ctx: Context): Document {
     const idGenerator: IdGenerator = new IdGenerator();
