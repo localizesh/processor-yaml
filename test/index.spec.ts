@@ -5,7 +5,7 @@ import path from "path";
 
 import YamlProcessor from "../src/index.js";
 
-const processor = new YamlProcessor("test");
+const processor = new YamlProcessor();
 
 function processAndCompare(filename: string) {
   const inDoc = fs.readFileSync(path.join('test', 'fixtures', filename), { encoding: 'utf-8' });
