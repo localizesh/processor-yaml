@@ -81,45 +81,43 @@ const stringToAst = (rootString: string): LayoutRoot => {
     const isMap: boolean = isPlainObject(yaml);
 
     if (isMap) {
-      return { type: "root", children: [{
-          type: "yaml",
-          tagName: "table",
-          children: [
-            {
-              type: "element",
-              tagName: "tbody",
-              children: getPropertiesInYamlObj(
-                  yaml,
-                  stringToAstRecursive,
-                  rootString
-              ),
-              properties: {},
-            },
-          ],
-          properties: {},
-        }]
+      return {
+        type: "yaml",
+        tagName: "table",
+        children: [
+          {
+            type: "element",
+            tagName: "tbody",
+            children: getPropertiesInYamlObj(
+              yaml,
+              stringToAstRecursive,
+              rootString
+            ),
+            properties: {},
+          },
+        ],
+        properties: {},
       }
     } else if (isSeq) {
-      return { type: "root", children: [{
-          type: "element",
-          tagName: "ul",
-          children: yaml.map((value: LayoutElement) => {
-            return {
-              type: "element",
-              tagName: "li",
-              children: [
-                {
-                  type: "element",
-                  tagName: "p",
-                  children:  [stringToAstRecursive(value)],
-                  properties: {},
-                }
-              ],
-              properties: {},
-            };
-          }),
-          properties: {}
-        }]
+      return {
+        type: "element",
+        tagName: "ul",
+        children: yaml.map((value: LayoutElement) => {
+          return {
+            type: "element",
+            tagName: "li",
+            children: [
+              {
+                type: "element",
+                tagName: "p",
+                children: [stringToAstRecursive(value)],
+                properties: {},
+              }
+            ],
+            properties: {},
+          };
+        }),
+        properties: {}
       }
     } else {
       return {
@@ -128,7 +126,12 @@ const stringToAst = (rootString: string): LayoutRoot => {
       };
     }
   };
-  return stringToAstRecursive(yamlObject);
+  const ast: LayoutElement = stringToAstRecursive(yamlObject);
+
+  return {
+    type: "root",
+    children: [ast]
+  };
 };
 
 const getQuotesType = (yaml: string, rootString: string) => {
