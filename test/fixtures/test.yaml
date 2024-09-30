@@ -18,3 +18,9 @@ stuck: science
 political: electric
 themselves: quiet
 red: willing
+numbers: [
+    one,
+    two,
+    three,
+    four
+]
