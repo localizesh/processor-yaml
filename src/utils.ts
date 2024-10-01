@@ -16,7 +16,12 @@ enum quotesTypes {
 }
 
 const astToString = (rootAst: LayoutRoot): string => {
-  const astToStringRecursive = (ast: any): LayoutElement => {
+  const astToStringRecursive = (ast: any, options: any = {}): LayoutElement => {
+    const {
+      isBool = false,
+      isNumber = false
+    } = options;
+
     let result: any;
     const isTableTag = ast?.tagName === "table";
     const isRoot = ast?.type === "root";
@@ -31,10 +36,13 @@ const astToString = (rootAst: LayoutRoot): string => {
       }, {});
     } else if (yamlSequenceTags.includes(ast?.tagName)) {
       const children = ast.children.map((value: LayoutElement) => {
+        const firstChild = value.children[0];
+        const properties = "properties" in firstChild && firstChild.properties;
+
         const str: any = astToStringRecursive(
-            value.tagName === "li" ?
-                ("children" in value.children[0] ? value.children[0].children[0] : value.children[0]) :
-                value
+          value.tagName === "li" ?
+                ("children" in firstChild ? firstChild.children[0] : firstChild) : value,
+          {...properties}
         );
         return str;
       });
@@ -61,7 +69,10 @@ const astToString = (rootAst: LayoutRoot): string => {
 
       result = { [keyChild.value]: astToStringRecursive(valueChild) };
     } else if (ast?.type === "text") {
-      result = ast.value;
+      result = isBool ?
+        (ast.value === "true") :
+        (isNumber ? Number(ast.value): ast.value);
+
     }
     return result;
   };

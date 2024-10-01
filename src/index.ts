@@ -9,7 +9,17 @@ function astToDocument(layout: LayoutRoot, ctx: Context): Document {
 
     const setSegment = (node: any) => {
         const tags = node.children[0].tags;
-        const text = node.children[0].value !== null ? node.children[0].value : '';
+        let text = node.children[0].value !== null ? node.children[0].value : '';
+
+        if(typeof text === "boolean") {
+          node.properties = {...node.properties, isBool: true};
+          text = text.toString();
+        }
+        if(typeof text === "number") {
+          node.properties = {...node.properties, isNumber: true};
+          text = text.toString();
+        }
+
         const id: string = idGenerator.generateId(text, tags, ctx)
         const segment: Segment = {
             id,
@@ -21,24 +31,12 @@ function astToDocument(layout: LayoutRoot, ctx: Context): Document {
         node.children = [{type: "segment", id}]
     }
 
-    visitParents(layout, { tagName: "tr" }, (node: any) => {
-        const childrenKey = node.children[0]
-        const childrenValue = node.children[1]
-
-        if(childrenKey.tagName === "td" && childrenValue.tagName === "td") {
-            if(childrenValue.children[0].type === "text") {
-                setSegment(childrenValue)
-            }
-
-            if(childrenValue.children[0].tagName === "ul") {
-                childrenValue.children[0].children.forEach((child: any)=> {
-                    if(child.children[0].children[0].type === "text") {
-                        setSegment(child.children[0])
-                    }
-                })
-            }
-        }
-    })
+    visitParents(layout,
+      (node: any) => node?.properties?.type === "yamlValue" || node.tagName === "p",
+      (node: any) => {
+        if(node.children[0].type === "text") setSegment(node);
+      }
+    )
 
     return { layout, segments };
 }
