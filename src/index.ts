@@ -11,9 +11,12 @@ function astToDocument(layout: LayoutRoot, ctx: Context): Document {
         const tags = node.children[0].tags;
         let text = node.children[0].value !== null ? node.children[0].value : '';
 
-        const isBool = typeof text === "boolean";
-        if(isBool) {
+        if(typeof text === "boolean") {
           node.properties = {...node.properties, isBool: true};
+          text = text.toString();
+        }
+        if(typeof text === "number") {
+          node.properties = {...node.properties, isNumber: true};
           text = text.toString();
         }
 
