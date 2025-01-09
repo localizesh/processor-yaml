@@ -14,6 +14,7 @@ function processAndCompare(filename: string) {
   const docStr = JSON.stringify(doc);
 
   const outDoc = processor.stringify(doc);
+
   const outDocStructure = processor.parse(outDoc);
   const outDocStructureStr = JSON.stringify(outDocStructure);
 
@@ -23,6 +24,9 @@ function processAndCompare(filename: string) {
 
 describe('YamlProcessorTest', function() {
   it('documents should be equal', function() {
+    processAndCompare('comments.yaml');
+    processAndCompare('paragraphs.yaml');
+    processAndCompare('travel.yaml');
     processAndCompare('test.yaml');
     processAndCompare('frontmatter.yaml');
     processAndCompare('microcopy.yml');
