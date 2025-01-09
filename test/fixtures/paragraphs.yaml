@@ -2,9 +2,23 @@
 single_line_text: |
   This is a string that can contain one or more sentences.
   It will span multiple lines, but the formatting will be preserved.
+
 # Example line using > symbol for paragraph
 paragraph_text: >
   This is also a string that can include one or more sentences.
   However, it will be treated as a single paragraph and line breaks will be removed.
+
+paragraph_edge_text: |-
+  This is also a string that can include one or more sentences.
+  However, it will be treated as a single paragraph and line breaks will be removed.
+
 # Strings without quotes
 unquoted_text: An example of a string without using quotes.
+
+title: Docs translation
+redirects:
+  - >-
+    /docs/new-relic-only/drupal-configuration/page-components/manage-translated-docs
+  - >-
+    /docs/new-relic-only/basic-style-guide/writing-guidelines/manage-translated-docs
+  - /docs/style-guide/writing-guidelines/docs-translation

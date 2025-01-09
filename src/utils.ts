@@ -71,11 +71,16 @@ const astToString = (rootAst: LayoutRoot): string => {
       const [key, value] = ast.children;
       const [keyChild] = key.children;
       const [valueChild] = value.children;
-
-      const isValueChildNumber = !isNaN(Number(valueChild.value));
-      if (isValueChildNumber) valueChild.value = Number(valueChild.value);
       const pair = new YAMLPair({});
+
       pair.key = new Scalar(keyChild.value);
+      if(key.properties?.yaml) {
+        for (let [keyProp, prop] of Object.entries(key.properties.yaml)) {
+          //@ts-ignore
+          pair.key[keyProp] = prop;
+        }
+      }
+
       pair.value = astToObjectRecursive(valueChild, value.properties);
 
       result = pair;
@@ -196,7 +201,9 @@ function getPropertiesInYamlObj(
       const yamlHastValue = stringToAstRecursive(pair.value);
 
       const yaVal: any = pair?.value;
+      const yaKey: any = pair?.key;
       let yamlValueProperties = {type: "yamlValue", typeof: typeof yaVal.value, yaml: {}};
+
       if (yamlHastValue.type === HastTypeNames.text) {
         yamlValueProperties.yaml = {
           type: yaVal?.type,
@@ -213,7 +220,12 @@ function getPropertiesInYamlObj(
             type: HastTypeNames.element,
             tagName: "td",
             children: [yamlHastKey],
-            properties: {},
+            properties: {
+              yaml: {
+                comment: yaKey?.comment,
+                commentBefore: yaKey?.commentBefore
+              }
+            },
           },
           {
             type: HastTypeNames.element,
