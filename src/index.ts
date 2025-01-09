@@ -1,5 +1,5 @@
 import {visitParents} from "unist-util-visit-parents";
-import yaml from "./utils.js";
+import yaml, {HastTypeNames, LayoutLevelTypeNames} from "./utils.js";
 import {SegmentsMap} from "./types";
 import {Context, Document, IdGenerator, LayoutRoot, Segment, Processor} from "@localizesh/sdk";
 
@@ -19,13 +19,13 @@ function astToDocument(layout: LayoutRoot, ctx: Context): Document {
         };
 
         segments.push(segment);
-        node.children = [{type: "segment", id}]
+        node.children = [{type: LayoutLevelTypeNames.segment, id}]
     }
 
     visitParents(layout,
       (node: any) => node?.properties?.type === "yamlValue" || node.tagName === "p",
       (node: any) => {
-        if(node.children[0].type === "text") setSegment(node);
+        if(node.children[0].type === HastTypeNames.text) setSegment(node);
       }
     )
 
@@ -39,10 +39,10 @@ function documentToAst(data: Document): any {
         segmentsMap[segment.id] = segment;
     });
 
-    visitParents(data.layout, { type: "segment" }, (node: any, parent) => {
+    visitParents(data.layout, { type: LayoutLevelTypeNames.segment }, (node: any, parent) => {
         const currentParent = parent[parent.length - 1];
 
-        currentParent.children = [{type: "text", value: segmentsMap[node.id].text}]
+        currentParent.children = [{type: HastTypeNames.text, value: segmentsMap[node.id].text}]
     });
 
     return data.layout;

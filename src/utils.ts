@@ -13,6 +13,17 @@ import {
 import {RootData} from "hast";
 import {LayoutElement, LayoutRoot} from "@localizesh/sdk";
 
+export enum HastTypeNames {
+  root = 'root',
+  element = "element",
+  text = "text",
+  comment = "comment",
+}
+
+export enum LayoutLevelTypeNames {
+  segment = "segment",
+  yaml = "yaml"
+}
 
 const yamlSequenceTags = ["ul", "li"];
 
@@ -25,7 +36,7 @@ const astToString = (rootAst: LayoutRoot): string => {
 
     let result: any;
     const isTableTag = ast?.tagName === "table";
-    const isRoot = ast?.type === "root";
+    const isRoot = ast?.type === HastTypeNames.root;
 
 
     if(isRoot){
@@ -68,7 +79,7 @@ const astToString = (rootAst: LayoutRoot): string => {
       pair.value = astToObjectRecursive(valueChild, value.properties);
 
       result = pair;
-    } else if (ast?.type === "text") {
+    } else if (ast?.type === HastTypeNames.text) {
 
       const isBool = typeOfSourceValue === "boolean";
       const isNumber = typeOfSourceValue === "number";
@@ -108,11 +119,11 @@ const stringToAst = (rootString: string): LayoutRoot => {
 
     if (isMap(yamlContent)) {
       return {
-        type: "yaml",
+        type: LayoutLevelTypeNames.yaml,
         tagName: "table",
         children: [
           {
-            type: "element",
+            type: HastTypeNames.element,
             tagName: "tbody",
             children: getPropertiesInYamlObj(
               yaml,
@@ -125,16 +136,16 @@ const stringToAst = (rootString: string): LayoutRoot => {
       }
     } else if (isSeq(yamlContent)) {
       return {
-        type: "element",
+        type: HastTypeNames.element,
         tagName: "ul",
         children: yaml.items.map((value: any) => {
 
           return {
-            type: "element",
+            type: HastTypeNames.element,
             tagName: "li",
             children: [
               {
-                type: "element",
+                type: HastTypeNames.element,
                 tagName: "p",
                 children: [stringToAstRecursive(value)],
                 properties: {
@@ -154,7 +165,7 @@ const stringToAst = (rootString: string): LayoutRoot => {
       }
     } else {
       return {
-        type: "text",
+        type: HastTypeNames.text,
         value: yaml.source,
       };
     }
@@ -162,7 +173,7 @@ const stringToAst = (rootString: string): LayoutRoot => {
   const ast: LayoutElement = stringToAstRecursive(yamlObject);
 
   return {
-    type: "root",
+    type: HastTypeNames.root,
     children: [ast],
     data: {
       comment: yamlObject.comment,
@@ -186,7 +197,7 @@ function getPropertiesInYamlObj(
 
       const yaVal: any = pair?.value;
       let yamlValueProperties = {type: "yamlValue", typeof: typeof yaVal.value, yaml: {}};
-      if (yamlHastValue.type === "text") {
+      if (yamlHastValue.type === HastTypeNames.text) {
         yamlValueProperties.yaml = {
           type: yaVal?.type,
           comment: yaVal?.comment,
@@ -195,17 +206,17 @@ function getPropertiesInYamlObj(
       }
 
       const value = {
-        type: "element",
+        type: HastTypeNames.element,
         tagName: "tr",
         children: [
           {
-            type: "element",
+            type: HastTypeNames.element,
             tagName: "td",
             children: [yamlHastKey],
             properties: {},
           },
           {
-            type: "element",
+            type: HastTypeNames.element,
             tagName: "td",
             children: [yamlHastValue],
             properties: yamlValueProperties,
