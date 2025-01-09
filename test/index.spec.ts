@@ -25,7 +25,7 @@ function processAndCompare(filename: string) {
 describe('YamlProcessorTest', function() {
   it('documents should be equal', function() {
     processAndCompare('comments.yaml');
-    processAndCompare('edge.yaml');
+    processAndCompare('paragraphs.yaml');
     processAndCompare('travel.yaml');
     processAndCompare('test.yaml');
     processAndCompare('frontmatter.yaml');

@@ -1,0 +1,10 @@
+# Example of a string using the | for a single line
+single_line_text: |
+  This is a string that can contain one or more sentences.
+  It will span multiple lines, but the formatting will be preserved.
+# Example line using > symbol for paragraph
+paragraph_text: >
+  This is also a string that can include one or more sentences.
+  However, it will be treated as a single paragraph and line breaks will be removed.
+# Strings without quotes
+unquoted_text: An example of a string without using quotes.
