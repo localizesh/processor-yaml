@@ -1,128 +1,166 @@
-import jsYaml, { CORE_SCHEMA } from "js-yaml";
+import {
+  stringify as stringifyYaml,
+  parseDocument as parseYamlDoc,
+  YAMLMap,
+  YAMLSeq,
+  Pair as YAMLPair,
+  Scalar,
+  Pair,
+  Document as YamlDoc,
+  isSeq,
+  isMap
+} from 'yaml';
+import {RootData} from "hast";
 import {LayoutElement, LayoutRoot} from "@localizesh/sdk";
 
+export enum HastTypeNames {
+  root = 'root',
+  element = "element",
+  text = "text",
+  comment = "comment",
+}
+
+export enum LayoutLevelTypeNames {
+  segment = "segment",
+  yaml = "yaml"
+}
 
 const yamlSequenceTags = ["ul", "li"];
 
-const quoteCustomCodes: { [key: string]: string } = {
-  single: "{$sqc0}",
-  double: "{$dqc0}",
-  without: "{$without0}",
-};
-
-enum quotesTypes {
-  single = "single",
-  double = "double",
-}
-
 const astToString = (rootAst: LayoutRoot): string => {
-  const astToStringRecursive = (ast: any, options: any = {}): LayoutElement => {
+  const astToObjectRecursive = (ast: any, options: any = {}): {} => {
     const {
-      isBool = false,
-      isNumber = false
+      yaml: yamlValueProps,
+      typeof: typeOfSourceValue
     } = options;
 
     let result: any;
     const isTableTag = ast?.tagName === "table";
-    const isRoot = ast?.type === "root";
+    const isRoot = ast?.type === HastTypeNames.root;
+
 
     if(isRoot){
       const table = ast?.children[0];
-      return astToStringRecursive(table)
+      return astToObjectRecursive(table)
     } else if (isTableTag) {
       const tbody = ast?.children[0];
-      result = tbody.children.reduce((result: {}, value: LayoutElement) => {
-        return { ...result, ...astToStringRecursive(value) };
-      }, {});
+      result = new YAMLMap();
+
+      tbody.children.forEach((value: LayoutElement) => {
+        result.add(astToObjectRecursive(value) as unknown as Pair);
+      });
+
     } else if (yamlSequenceTags.includes(ast?.tagName)) {
-      const children = ast.children.map((value: LayoutElement) => {
+      const yamlSeq = new YAMLSeq();
+
+      ast.children.forEach((value: LayoutElement) => {
         const firstChild = value.children[0];
         const properties = "properties" in firstChild && firstChild.properties;
 
-        const str: any = astToStringRecursive(
-          value.tagName === "li" ?
-                ("children" in firstChild ? firstChild.children[0] : firstChild) : value,
-          {...properties}
+        yamlSeq.add(
+          astToObjectRecursive(
+            value.tagName === "li" ?
+              ("children" in firstChild ? firstChild.children[0] : firstChild) : value,
+            {...properties}
+          )
         );
-        return str;
       });
-      result = ast?.tagName === "li" ? children[0] : children;
+
+      result = yamlSeq;
     } else if (ast?.tagName === "tr") {
       const [key, value] = ast.children;
       const [keyChild] = key.children;
       const [valueChild] = value.children;
-      const quotes = value?.properties?.quotes;
+      const pair = new YAMLPair({});
 
-      const isValueChildNumber = !isNaN(Number(valueChild.value));
-      if (isValueChildNumber) valueChild.value = Number(valueChild.value);
-      if (quotes && valueChild.value && quoteCustomCodes[quotes]) {
-        valueChild.value =
-            quoteCustomCodes[quotes] +
-            valueChild.value +
-            quoteCustomCodes[quotes];
-      } else if (valueChild.value) {
-        valueChild.value =
-            quoteCustomCodes.without +
-            valueChild.value +
-            quoteCustomCodes.without;
+      pair.key = new Scalar(keyChild.value);
+      if(key.properties?.yaml) {
+        for (let [keyProp, prop] of Object.entries(key.properties.yaml)) {
+          //@ts-ignore
+          pair.key[keyProp] = prop;
+        }
       }
 
-      result = { [keyChild.value]: astToStringRecursive(valueChild) };
-    } else if (ast?.type === "text") {
-      result = isBool ?
-        (ast.value === "true") :
-        (isNumber ? Number(ast.value): ast.value);
+      pair.value = astToObjectRecursive(valueChild, value.properties);
 
+      result = pair;
+    } else if (ast?.type === HastTypeNames.text) {
+
+      const isBool = typeOfSourceValue === "boolean";
+      const isNumber = typeOfSourceValue === "number";
+
+      result = new Scalar(
+        isBool ?
+          (ast.value === "true") :
+          (isNumber ? Number(ast.value) : ast.value.toString())
+      );
+      if(yamlValueProps) {
+        for (let [key, value] of Object.entries(yamlValueProps)) {
+          result[key] = value;
+        }
+      }
     }
     return result;
   };
 
-  const yamlObject: Object = astToStringRecursive(rootAst);
+  const yamlDoc = new YamlDoc(astToObjectRecursive(rootAst));
+  const docProps: RootData | undefined = rootAst.data;
 
-  let yamlString: string = jsYaml.dump(yamlObject, { lineWidth: -1 });
-  yamlString = replaceCustomQuotes(yamlString);
+  if (docProps) {
+    for (let [key, value] of Object.entries(docProps)) {
+      //@ts-ignore
+      yamlDoc[key] = value;
+    }
+  }
 
-  return yamlString;
+  return stringifyYaml(yamlDoc, {lineWidth: 0});;
 };
 
 const stringToAst = (rootString: string): LayoutRoot => {
-  const yamlObject = jsYaml.load(rootString, { schema: CORE_SCHEMA });
-  const stringToAstRecursive: any = (yaml: any) => {
-    const isSeq: boolean = Array.isArray(yaml);
-    const isMap: boolean = isPlainObject(yaml);
+  const yamlObject = parseYamlDoc(rootString);
 
-    if (isMap) {
+  const stringToAstRecursive: any = (yaml: any) => {
+    const yamlContent = yaml.contents || yaml;
+
+    if (isMap(yamlContent)) {
       return {
-        type: "yaml",
+        type: LayoutLevelTypeNames.yaml,
         tagName: "table",
         children: [
           {
-            type: "element",
+            type: HastTypeNames.element,
             tagName: "tbody",
             children: getPropertiesInYamlObj(
               yaml,
-              stringToAstRecursive,
-              rootString
+              stringToAstRecursive
             ),
             properties: {},
           },
         ],
         properties: {},
       }
-    } else if (isSeq) {
+    } else if (isSeq(yamlContent)) {
       return {
-        type: "element",
+        type: HastTypeNames.element,
         tagName: "ul",
-        children: yaml.map((value: LayoutElement) => {
+        children: yaml.items.map((value: any) => {
+
           return {
-            type: "element",
+            type: HastTypeNames.element,
             tagName: "li",
             children: [
               {
-                type: "element",
+                type: HastTypeNames.element,
                 tagName: "p",
                 children: [stringToAstRecursive(value)],
-                properties: {},
+                properties: {
+                  typeof: typeof value.value,
+                  yaml: {
+                    type: value.type,
+                    comment: value.comment,
+                    commentBefore: value.commentBefore
+                  }
+                },
               }
             ],
             properties: {},
@@ -132,86 +170,67 @@ const stringToAst = (rootString: string): LayoutRoot => {
       }
     } else {
       return {
-        type: "text",
-        value: yaml,
+        type: HastTypeNames.text,
+        value: yaml.source,
       };
     }
   };
   const ast: LayoutElement = stringToAstRecursive(yamlObject);
 
   return {
-    type: "root",
-    children: [ast]
+    type: HastTypeNames.root,
+    children: [ast],
+    data: {
+      comment: yamlObject.comment,
+      commentBefore: yamlObject.commentBefore
+    }
   };
 };
 
-const getQuotesType = (yaml: string, rootString: string) => {
-  const startIndex = rootString.indexOf(yaml);
-  const bracket = rootString[startIndex - 1];
-  if (!bracket || !bracket.trim()) {
-    return "";
-  } else {
-    return bracket === `'` ? quotesTypes.single : quotesTypes.double;
-  }
-};
-
-const replaceCustomQuotes = (str: string): string => {
-  const quotesMap: string[][] = [
-    [`'${quoteCustomCodes.without}`, ``],
-    [`${quoteCustomCodes.without}'`, ``],
-    [`${quoteCustomCodes.without}`, ``],
-    [`'${quoteCustomCodes.double}`, `"`],
-    [`${quoteCustomCodes.double}'`, `"`],
-    [`${quoteCustomCodes.double}`, ``],
-    [`'${quoteCustomCodes.single}`, `'`],
-    [`${quoteCustomCodes.single}'`, `'`],
-    [`${quoteCustomCodes.single}`, ``]
-  ];
-
-  for (const [key, value] of quotesMap) {
-    str = str.replaceAll(key, value);
-  }
-
-  return  str;
-};
-
-const isPlainObject = function (obj: Object): boolean {
-  return Object.prototype.toString.call(obj) === "[object Object]";
-};
-
 function getPropertiesInYamlObj(
-    yaml: { [key: string]: string },
-    stringToAstRecursive: any,
-    rootString: string
+    yaml: any,
+    stringToAstRecursive: any
 ) {
-  const children = [];
-  for (let key in yaml) {
-    if (yaml.hasOwnProperty(key)) {
-      const yamlKey = stringToAstRecursive(key);
-      const yamlValue = stringToAstRecursive(yaml[key]);
+  const children: any[] = [];
+  const contentsItems: YAMLPair[] = yaml?.contents?.items || yaml?.items || [];
 
-      let yamlValueProperties: any = { type: "yamlValue" };
+  contentsItems.forEach((pair: YAMLPair) => {
+    if ("key" in pair) {
 
-      if (yamlValue.type === "text") {
-        yamlValue.value = yamlValue.value.toString();
-        const quotes = getQuotesType(yamlValue.value, rootString);
-        if (quotes) yamlValueProperties = { ...yamlValueProperties, quotes };
+      const yamlHastKey = stringToAstRecursive(pair.key);
+      const yamlHastValue = stringToAstRecursive(pair.value);
+
+      const yaVal: any = pair?.value;
+      const yaKey: any = pair?.key;
+      let yamlValueProperties = {type: "yamlValue", typeof: typeof yaVal.value, yaml: {}};
+
+      if (yamlHastValue.type === HastTypeNames.text) {
+        yamlValueProperties.yaml = {
+          type: yaVal?.type,
+          comment: yaVal?.comment,
+          commentBefore: yaVal?.commentBefore,
+        };
       }
 
       const value = {
-        type: "element",
+        type: HastTypeNames.element,
         tagName: "tr",
         children: [
           {
-            type: "element",
+            type: HastTypeNames.element,
             tagName: "td",
-            children: [yamlKey],
-            properties: {},
+            children: [yamlHastKey],
+            properties: {
+              yaml: {
+                comment: yaKey?.comment,
+                commentBefore: yaKey?.commentBefore
+              }
+            },
           },
           {
-            type: "element",
+            type: HastTypeNames.element,
             tagName: "td",
-            children: [yamlValue],
+            children: [yamlHastValue],
             properties: yamlValueProperties,
           },
         ],
@@ -219,7 +238,7 @@ function getPropertiesInYamlObj(
       };
       children.push(value);
     }
-  }
+  })
   return children;
 }
 
