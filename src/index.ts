@@ -11,15 +11,6 @@ function astToDocument(layout: LayoutRoot, ctx: Context): Document {
         const tags = node.children[0].tags;
         let text = node.children[0].value !== null ? node.children[0].value : '';
 
-        if(typeof text === "boolean") {
-          node.properties = {...node.properties, isBool: true};
-          text = text.toString();
-        }
-        if(typeof text === "number") {
-          node.properties = {...node.properties, isNumber: true};
-          text = text.toString();
-        }
-
         const id: string = idGenerator.generateId(text, tags, ctx)
         const segment: Segment = {
             id,

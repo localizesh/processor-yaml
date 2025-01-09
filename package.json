@@ -13,8 +13,8 @@
     "test": "mocha"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0",
-    "unist-util-visit-parents": "^6.0.1"
+    "unist-util-visit-parents": "^6.0.1",
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.19",
