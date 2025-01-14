@@ -1,17 +1,6 @@
-# Comments look like this.
-################
-# SCALAR TYPES #
-################
-# Our root object (which continues for the entire document) will be a map,
-# which is equivalent to a dictionary, hash or object in other languages.
-# The key, equals sign, and value must be on the same line
-# (though some values can be broken over multiple lines).
-
-key:
-  - value line 1
-  #comment 1
-  - value line 2
-  #comment 2
-  - value line 3
-
-text: "Some text" # Comment for text
+tagsFlow: ["travel", "new zealand", "adventure", "nature"]
+tags:
+  - "travel"
+  - "new zealand"
+  - "adventure"
+  - "nature"

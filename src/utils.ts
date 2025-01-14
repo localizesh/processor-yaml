@@ -53,8 +53,8 @@ const astToString = (rootAst: LayoutRoot): string => {
     } else if (yamlSequenceTags.includes(ast?.tagName)) {
       const yamlSeq = new YAMLSeq();
 
-      if(ast.properties?.flow) {
-        yamlSeq.flow = ast.properties.flow;
+      if(ast.properties?.yaml?.flow) {
+        yamlSeq.flow = ast.properties.yaml.flow;
       }
 
       ast.children.forEach((value: LayoutElement) => {
@@ -170,7 +170,7 @@ const stringToAst = (rootString: string): LayoutRoot => {
             properties: {},
           };
         }),
-        properties: {flow: !!yaml?.flow}
+        properties: {yaml: {flow: !!yaml?.flow}}
       }
     } else {
       return {
