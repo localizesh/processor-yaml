@@ -25,7 +25,7 @@ export enum LayoutLevelTypeNames {
   yaml = "yaml"
 }
 
-const yamlSequenceTags = ["ul", "li"];
+const yamlSequenceTags = ["ul", "ol", "li"];
 
 const astToString = (rootAst: LayoutRoot): string => {
   const astToObjectRecursive = (ast: any, options: any = {}): {} => {
@@ -52,6 +52,10 @@ const astToString = (rootAst: LayoutRoot): string => {
 
     } else if (yamlSequenceTags.includes(ast?.tagName)) {
       const yamlSeq = new YAMLSeq();
+
+      if(ast.properties?.flow) {
+        yamlSeq.flow = ast.properties.flow;
+      }
 
       ast.children.forEach((value: LayoutElement) => {
         const firstChild = value.children[0];
@@ -166,7 +170,7 @@ const stringToAst = (rootString: string): LayoutRoot => {
             properties: {},
           };
         }),
-        properties: {}
+        properties: {flow: !!yaml?.flow}
       }
     } else {
       return {
