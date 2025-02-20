@@ -53,8 +53,9 @@ const astToString = (rootAst: LayoutRoot): string => {
     } else if (yamlSequenceTags.includes(ast?.tagName)) {
       const yamlSeq = new YAMLSeq();
 
-      if(ast.properties?.yaml?.flow) {
+      if(ast.properties?.yaml) {
         yamlSeq.flow = ast.properties.yaml.flow;
+        yamlSeq.spaceBefore = ast.properties.yaml.spaceBefore;
       }
 
       ast.children.forEach((value: LayoutElement) => {
@@ -162,15 +163,16 @@ const stringToAst = (rootString: string): LayoutRoot => {
                   yaml: {
                     type: value.type,
                     comment: value.comment,
-                    commentBefore: value.commentBefore
+                    commentBefore: value.commentBefore,
+                    spaceBefore: value.spaceBefore
                   }
                 },
               }
             ],
-            properties: {},
+            properties: {yaml: {spaceBefore: value.spaceBefore}},
           };
         }),
-        properties: {yaml: {flow: !!yaml?.flow}}
+        properties: {yaml: {flow: !!yaml?.flow, spaceBefore: yaml.spaceBefore}}
       }
     } else {
       return {
@@ -227,7 +229,8 @@ function getPropertiesInYamlObj(
             properties: {
               yaml: {
                 comment: yaKey?.comment,
-                commentBefore: yaKey?.commentBefore
+                commentBefore: yaKey?.commentBefore,
+                spaceBefore: yaKey.spaceBefore
               }
             },
           },

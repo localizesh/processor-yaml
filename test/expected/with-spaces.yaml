@@ -1,0 +1,12 @@
+headquarters:
+  address: "123 Quantum Blvd, Silicon Valley, CA"
+  phone: "+1-800-123-4567"
+  website: "https://www.quantuminnovators.com"
+
+  social_media:
+    twitter: "https://twitter.com/quantum_innovators"
+    linkedin: "https://www.linkedin.com/company/quantum-innovators"
+
+  departments:
+    - name: "Research and Development"
+      budget: 2500000

@@ -1,4 +1,5 @@
 import {assert} from "chai";
+import eol from "eol";
 
 import fs from "fs";
 import path from "path";
@@ -22,15 +23,28 @@ function processAndCompare(filename: string) {
   console.log(filename);
 }
 
+function processAndCompareWithExpected(filename: string) {
+  const inDoc = eol.lf(fs.readFileSync(path.join('test', 'fixtures', filename), {encoding: 'utf-8'}));
+  const inDocExpected = eol.lf(fs.readFileSync(path.join('test', 'expected', filename), {encoding: 'utf-8'}));
+
+
+  const doc = processor.parse(inDoc);
+  const outDoc = processor.stringify(doc);
+debugger
+  assert.equal(outDoc, inDocExpected);
+  console.log(filename);
+}
+
 describe('YamlProcessorTest', function() {
   it('documents should be equal', function() {
-    processAndCompare('comments.yaml');
-    processAndCompare('paragraphs.yaml');
-    processAndCompare('travel.yaml');
-    processAndCompare('test.yaml');
-    processAndCompare('frontmatter.yaml');
-    processAndCompare('microcopy.yml');
-    processAndCompare('dependabot.yml');
+    processAndCompareWithExpected('with-spaces.yaml');
+    // processAndCompare('comments.yaml');
+    // processAndCompare('paragraphs.yaml');
+    // processAndCompare('travel.yaml');
+    // processAndCompare('test.yaml');
+    // processAndCompare('frontmatter.yaml');
+    // processAndCompare('microcopy.yml');
+    // processAndCompare('dependabot.yml');
   });
 });
 
