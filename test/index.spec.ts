@@ -30,7 +30,7 @@ function processAndCompareWithExpected(filename: string) {
 
   const doc = processor.parse(inDoc);
   const outDoc = processor.stringify(doc);
-debugger
+
   assert.equal(outDoc, inDocExpected);
   console.log(filename);
 }
@@ -38,13 +38,13 @@ debugger
 describe('YamlProcessorTest', function() {
   it('documents should be equal', function() {
     processAndCompareWithExpected('with-spaces.yaml');
-    // processAndCompare('comments.yaml');
-    // processAndCompare('paragraphs.yaml');
-    // processAndCompare('travel.yaml');
-    // processAndCompare('test.yaml');
-    // processAndCompare('frontmatter.yaml');
-    // processAndCompare('microcopy.yml');
-    // processAndCompare('dependabot.yml');
+    processAndCompare('comments.yaml');
+    processAndCompare('paragraphs.yaml');
+    processAndCompare('travel.yaml');
+    processAndCompare('test.yaml');
+    processAndCompare('frontmatter.yaml');
+    processAndCompare('microcopy.yml');
+    processAndCompare('dependabot.yml');
   });
 });
 
