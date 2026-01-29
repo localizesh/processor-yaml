@@ -1,4 +1,4 @@
-import {assert} from "chai";
+import { assert, describe, it } from "vitest";
 import eol from "eol";
 
 import fs from "fs";
@@ -9,7 +9,9 @@ import YamlProcessor from "../src/index.js";
 const processor = new YamlProcessor();
 
 function processAndCompare(filename: string) {
-  const inDoc = fs.readFileSync(path.join('test', 'fixtures', filename), { encoding: 'utf-8' });
+  const inDoc = fs.readFileSync(path.join("test", "fixtures", filename), {
+    encoding: "utf-8",
+  });
 
   const doc = processor.parse(inDoc);
   const docStr = JSON.stringify(doc);
@@ -24,9 +26,16 @@ function processAndCompare(filename: string) {
 }
 
 function processAndCompareWithExpected(filename: string) {
-  const inDoc = eol.lf(fs.readFileSync(path.join('test', 'fixtures', filename), {encoding: 'utf-8'}));
-  const inDocExpected = eol.lf(fs.readFileSync(path.join('test', 'expected', filename), {encoding: 'utf-8'}));
-
+  const inDoc = eol.lf(
+    fs.readFileSync(path.join("test", "fixtures", filename), {
+      encoding: "utf-8",
+    }),
+  );
+  const inDocExpected = eol.lf(
+    fs.readFileSync(path.join("test", "expected", filename), {
+      encoding: "utf-8",
+    }),
+  );
 
   const doc = processor.parse(inDoc);
   const outDoc = processor.stringify(doc);
@@ -35,18 +44,32 @@ function processAndCompareWithExpected(filename: string) {
   console.log(filename);
 }
 
-describe('YamlProcessorTest', function() {
-  it('documents should be equal', function() {
-    processAndCompareWithExpected('with-spaces.yaml');
-    processAndCompare('comments.yaml');
-    processAndCompare('paragraphs.yaml');
-    processAndCompare('travel.yaml');
-    processAndCompare('test.yaml');
-    processAndCompare('frontmatter.yaml');
-    processAndCompare('microcopy.yml');
-    processAndCompare('dependabot.yml');
+describe("YamlProcessorTest", function () {
+  describe("Expected Output Match", function () {
+    const fixtures = ["with-spaces.yaml"];
+
+    fixtures.forEach((filename) => {
+      it(`should match expected output for ${filename}`, function () {
+        processAndCompareWithExpected(filename);
+      });
+    });
+  });
+
+  describe("Structure Identity", function () {
+    const fixtures = [
+      "comments.yaml",
+      "paragraphs.yaml",
+      "travel.yaml",
+      "test.yaml",
+      "frontmatter.yaml",
+      "microcopy.yml",
+      "dependabot.yml",
+    ];
+
+    fixtures.forEach((filename) => {
+      it(`should maintain structure for ${filename}`, function () {
+        processAndCompare(filename);
+      });
+    });
   });
 });
-
-
-

@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc --project tsconfig.build.json",
-    "test": "mocha"
+    "test": "vitest run"
   },
   "dependencies": {
     "eol": "^0.10.0",
@@ -18,13 +18,10 @@
     "yaml": "^2.8.0"
   },
   "devDependencies": {
-    "@types/chai": "^5.2.1",
     "@types/js-yaml": "^4.0.9",
-    "@types/mocha": "^10.0.10",
-    "chai": "^5.2.0",
-    "mocha": "^11.1.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.2"
+    "@types/node": "^25.1.0",
+    "typescript": "^5.8.2",
+    "vitest": "^4.0.18"
   },
   "peerDependencies": {
     "@localizesh/sdk": "^0.3.2"

@@ -2,20 +2,14 @@ name: Release
 
 on:
   release:
-    types: [ published ]
+    types: [published]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          registry-url: 'https://registry.npmjs.org'
-          node-version: 18
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/build
       - run: npm version ${{ github.event.release.tag_name }} --no-git-tag-version
       - run: npm publish --access=public
         env:
