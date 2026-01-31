@@ -1,65 +1,89 @@
-import {visitParents} from "unist-util-visit-parents";
-import yaml, {HastTypeNames, LayoutLevelTypeNames} from "./utils.js";
-import {SegmentsMap} from "./types";
-import {Context, Document, IdGenerator, LayoutRoot, Segment, Processor} from "@localizesh/sdk";
+import { text } from "@localizesh/sdk";
+import yaml, { HastTypeNames, LayoutLevelTypeNames } from "./utils.js";
+import {
+  Context,
+  Document,
+  IdGenerator,
+  LayoutRoot,
+  Segment,
+  Processor,
+  visitParents,
+  LayoutElement,
+  LayoutSegment,
+  LayoutNode,
+} from "@localizesh/sdk";
 
 function astToDocument(layout: LayoutRoot, ctx: Context): Document {
-    const idGenerator: IdGenerator = new IdGenerator();
-    const segments: Segment[] = [];
+  const idGenerator: IdGenerator = new IdGenerator();
+  const segments: Segment[] = [];
 
-    const setSegment = (node: any) => {
-        const tags = node.children[0].tags;
-        let text = node.children[0].value !== null ? node.children[0].value : '';
+  const setSegment = (node: LayoutElement) => {
+    const child = node.children[0] as LayoutElement;
+    // @ts-ignore
+    const tags = child.tags;
+    // @ts-ignore
+    let text = child.value !== null ? child.value : "";
 
-        const id: string = idGenerator.generateId(text, tags, ctx)
-        const segment: Segment = {
-            id,
-            text,
-            ...(tags && { tags }),
-        };
+    const id: string = idGenerator.generateId(text, tags, ctx);
+    const segment: Segment = {
+      id,
+      text,
+      ...(tags && { tags }),
+    };
 
-        segments.push(segment);
-        node.children = [{type: LayoutLevelTypeNames.segment, id}]
-    }
+    segments.push(segment);
+    // @ts-ignore
+    node.children = [{ type: LayoutLevelTypeNames.segment, id }];
+  };
 
-    visitParents(layout,
-      (node: any) => node?.properties?.type === "yamlValue" || node.tagName === "p",
-      (node: any) => {
-        if(node.children[0].type === HastTypeNames.text) setSegment(node);
-      }
-    )
+  visitParents(
+    layout,
+    (node: LayoutNode) =>
+      // @ts-ignore
+      node?.properties?.type === "yamlValue" ||
+      (node as LayoutElement).tagName === "p",
+    (node: LayoutNode) => {
+      const el = node as LayoutElement;
+      if (el.children[0].type === HastTypeNames.text) setSegment(el);
+    },
+  );
 
-    return { layout, segments };
+  return { layout, segments };
 }
 
 function documentToAst(data: Document): any {
-    const segmentsMap: SegmentsMap = {};
+  const segments: Record<string, Segment> = {};
 
-    data.segments.forEach((segment: Segment): void => {
-        segmentsMap[segment.id] = segment;
-    });
+  data.segments.forEach((segment: Segment): void => {
+    segments[segment.id] = segment;
+  });
 
-    visitParents(data.layout, { type: LayoutLevelTypeNames.segment }, (node: any, parent) => {
-        const currentParent = parent[parent.length - 1];
+  visitParents(
+    data.layout,
+    { type: LayoutLevelTypeNames.segment },
+    (node: LayoutNode, parent: LayoutNode[]) => {
+      const segmentNode = node as LayoutSegment;
+      const currentParent = parent[parent.length - 1] as LayoutElement;
 
-        currentParent.children = [{type: HastTypeNames.text, value: segmentsMap[node.id].text}]
-    });
+      currentParent.children = [text(segments[segmentNode.id].text)];
+    },
+  );
 
-    return data.layout;
+  return data.layout;
 }
 
-class YamlProcessor implements Processor {
-    parse(res: string, ctx?: Context): Document {
-        const ast: LayoutRoot = yaml.stringToAst(res);
+class YamlProcessor extends Processor {
+  parse(res: string, ctx?: Context): Document {
+    const ast: LayoutRoot = yaml.stringToAst(res);
 
-        return astToDocument(ast, ctx);
-    }
+    return astToDocument(ast, ctx);
+  }
 
-    stringify(data: Document, ctx?: Context): string {
-        const ast = documentToAst(data);
+  stringify(data: Document, ctx?: Context): string {
+    const ast = documentToAst(data);
 
-        return yaml.astToString(ast);
-    }
+    return yaml.astToString(ast);
+  }
 }
 
 export default YamlProcessor;
