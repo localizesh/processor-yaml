@@ -1,9 +1,21 @@
 {
   "name": "@localizesh/processor-yaml",
+  "description": "A Localize.sh processor for YAML files.",
   "repository": "localizesh/processor-yaml",
+  "license": "Apache-2.0",
+  "author": "Localize.sh",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "localize-processor-yaml": "dist/bin.js"
+  },
   "files": [
     "/dist"
   ],
@@ -13,17 +25,15 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "eol": "^0.10.0",
-    "unist-util-visit-parents": "^6.0.1",
-    "yaml": "^2.8.0"
+    "@localizesh/sdk": "^2.0.0",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
+    "@types/hast": "^3.0.4",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.1.0",
-    "typescript": "^5.8.2",
+    "eol": "^0.10.0",
+    "typescript": "^5.9.3",
     "vitest": "^4.0.18"
-  },
-  "peerDependencies": {
-    "@localizesh/sdk": "^0.3.2"
   }
 }
