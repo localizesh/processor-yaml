@@ -10,8 +10,13 @@ import {
   isSeq,
   isMap,
 } from "yaml";
-import { RootData } from "hast";
-import type { LayoutElement, LayoutRoot, LayoutNode } from "@localizesh/sdk";
+import {
+  type LayoutElement,
+  type LayoutRoot,
+  type LayoutNode,
+  element,
+  text,
+} from "@localizesh/sdk";
 
 export enum HastTypeNames {
   root = "root",
@@ -83,7 +88,7 @@ const astToString = (rootAst: LayoutRoot): string => {
 
       pair.key = new Scalar(keyChild.value);
       if (key.properties?.yaml) {
-        for (let [keyProp, prop] of Object.entries(key.properties.yaml)) {
+        for (const [keyProp, prop] of Object.entries(key.properties.yaml)) {
           //@ts-ignore
           pair.key[keyProp] = prop;
         }
@@ -102,7 +107,7 @@ const astToString = (rootAst: LayoutRoot): string => {
         isBool ? val === "true" : isNumber ? Number(val) : val.toString(),
       );
       if (yamlValueProps) {
-        for (let [key, value] of Object.entries(yamlValueProps)) {
+        for (const [key, value] of Object.entries(yamlValueProps)) {
           result[key] = value;
         }
       }
@@ -111,10 +116,10 @@ const astToString = (rootAst: LayoutRoot): string => {
   };
 
   const yamlDoc = new YamlDoc(astToObjectRecursive(rootAst));
-  const docProps: RootData | undefined = rootAst.data;
+  const docProps = rootAst.data;
 
   if (docProps) {
-    for (let [key, value] of Object.entries(docProps)) {
+    for (const [key, value] of Object.entries(docProps)) {
       //@ts-ignore
       yamlDoc[key] = value;
     }
@@ -133,52 +138,37 @@ const stringToAst = (rootString: string): LayoutRoot => {
       return {
         type: LayoutLevelTypeNames.yaml,
         tagName: "table",
-        children: [
-          {
-            type: HastTypeNames.element,
-            tagName: "tbody",
-            children: getPropertiesInYamlObj(yaml, stringToAstRecursive),
-            properties: {},
-          },
-        ],
         properties: {},
+        children: [ element("tbody", getPropertiesInYamlObj(yaml, stringToAstRecursive)) ],
       };
     } else if (isSeq(yamlContent)) {
-      return {
-        type: HastTypeNames.element,
-        tagName: "ul",
-        children: yaml.items.map((value: any) => {
-          return {
-            type: HastTypeNames.element,
-            tagName: "li",
-            children: [
-              {
-                type: HastTypeNames.element,
-                tagName: "p",
-                children: [stringToAstRecursive(value)],
-                properties: {
-                  typeof: typeof value.value,
-                  yaml: {
-                    type: value.type,
-                    comment: value.comment,
-                    commentBefore: value.commentBefore,
-                    spaceBefore: value.spaceBefore,
-                  },
-                },
-              },
-            ],
-            properties: { yaml: { spaceBefore: value.spaceBefore } },
-          };
-        }),
-        properties: {
+      return element(
+        "ul",
+        {
           yaml: { flow: !!yaml?.flow, spaceBefore: yaml.spaceBefore },
         },
-      };
+        yaml.items.map((value: any) => {
+          return element(
+            "li",
+            { yaml: { spaceBefore: value.spaceBefore } },
+            element(
+              "p",
+              {
+                typeof: typeof value.value,
+                yaml: {
+                  type: value.type,
+                  comment: value.comment,
+                  commentBefore: value.commentBefore,
+                  spaceBefore: value.spaceBefore,
+                },
+              },
+              stringToAstRecursive(value),
+            ),
+          );
+        }),
+      );
     } else {
-      return {
-        type: HastTypeNames.text,
-        value: yaml.source,
-      };
+      return text(yaml.source);
     }
   };
   const ast: LayoutElement = stringToAstRecursive(yamlObject);
@@ -197,18 +187,18 @@ function getPropertiesInYamlObj(
   yaml: any,
   stringToAstRecursive: any,
 ): LayoutElement[] {
-  const children: any[] = [];
   const contentsItems: YAMLPair[] = yaml?.contents?.items || yaml?.items || [];
 
-  contentsItems.forEach((pair: YAMLPair) => {
-    if ("key" in pair) {
+  return contentsItems
+    .filter((pair: YAMLPair) => "key" in pair)
+    .map((pair: YAMLPair) => {
       const yamlHastKey = stringToAstRecursive(pair.key);
       const yamlHastValue = stringToAstRecursive(pair.value);
 
       const yaVal: any = pair?.value;
       const yaKey: any = pair?.key;
-      let yamlValueProperties = {
-        type: "yamlValue",
+      const yamlValueProperties: any = {
+        kind: "yamlValue",
         typeof: typeof yaVal.value,
         yaml: {},
       };
@@ -221,7 +211,12 @@ function getPropertiesInYamlObj(
         };
       }
 
-      const value = {
+      // We manually construct the AST node here instead of using the 'element' helper from @localizesh/sdk.
+      // The 'element' helper (wrapper around 'hastscript') has two issues for our use case:
+      // 1. It interprets objects with a 'type' property as child nodes, forcing us to use 'kind' instead.
+      // 2. It sanitizes properties for HTML compliance, stringifying our complex 'yaml' object into "[object Object]",
+      //    which breaks our logic that relies on the raw object reference.
+      return {
         type: HastTypeNames.element,
         tagName: "tr",
         children: [
@@ -246,10 +241,7 @@ function getPropertiesInYamlObj(
         ],
         properties: {},
       };
-      children.push(value);
-    }
-  });
-  return children;
+    });
 }
 
 const yaml: {

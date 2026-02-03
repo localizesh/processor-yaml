@@ -1,4 +1,4 @@
-import { text } from "@localizesh/sdk";
+import { segment, text } from "@localizesh/sdk";
 import yaml, { HastTypeNames, LayoutLevelTypeNames } from "./utils.js";
 import {
   Context,
@@ -22,25 +22,23 @@ function astToDocument(layout: LayoutRoot, ctx: Context): Document {
     // @ts-ignore
     const tags = child.tags;
     // @ts-ignore
-    let text = child.value !== null ? child.value : "";
+    const text = child.value !== null ? child.value : "";
 
     const id: string = idGenerator.generateId(text, tags, ctx);
-    const segment: Segment = {
+    segments.push({
       id,
       text,
       ...(tags && { tags }),
-    };
-
-    segments.push(segment);
+    });
     // @ts-ignore
-    node.children = [{ type: LayoutLevelTypeNames.segment, id }];
+    node.children = [segment(id)];
   };
 
   visitParents(
     layout,
     (node: LayoutNode) =>
       // @ts-ignore
-      node?.properties?.type === "yamlValue" ||
+      node?.properties?.kind === "yamlValue" ||
       (node as LayoutElement).tagName === "p",
     (node: LayoutNode) => {
       const el = node as LayoutElement;
