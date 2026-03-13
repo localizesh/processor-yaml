@@ -55,6 +55,51 @@ describe("YamlProcessorTest", function () {
     });
   });
 
+  describe("Unique Segment IDs", function () {
+    it("should generate distinct IDs for same text under different keys", function () {
+      const yaml = [
+        "section1:",
+        '  title: "Hello"',
+        "section2:",
+        '  title: "Hello"',
+      ].join("\n");
+
+      const doc = processor.parse(yaml);
+      const ids = doc.segments.map((s) => s.id);
+
+      assert.equal(ids.length, new Set(ids).size, "segment IDs should be unique");
+    });
+
+    it("should include key path in segment metadata", function () {
+      const yaml = [
+        "parent:",
+        "  child:",
+        '    name: "value"',
+      ].join("\n");
+
+      const doc = processor.parse(yaml);
+      const seg = doc.segments.find((s) => s.text === "value");
+
+      assert.ok(seg, "segment should exist");
+      assert.deepEqual(seg.metadata, { key: "parent.child.name" });
+    });
+
+    it("should handle deeply nested key paths", function () {
+      const yaml = [
+        "a:",
+        "  b:",
+        "    c:",
+        "      d: deep",
+      ].join("\n");
+
+      const doc = processor.parse(yaml);
+      const seg = doc.segments.find((s) => s.text === "deep");
+
+      assert.ok(seg, "segment should exist");
+      assert.deepEqual(seg.metadata, { key: "a.b.c.d" });
+    });
+  });
+
   describe("Structure Identity", function () {
     const fixtures = [
       "comments.yaml",

@@ -16,6 +16,7 @@ import {
   type LayoutNode,
   element,
   text,
+  root,
 } from "@localizesh/sdk";
 
 export enum HastTypeNames {
@@ -173,14 +174,13 @@ const stringToAst = (rootString: string): LayoutRoot => {
   };
   const ast: LayoutElement = stringToAstRecursive(yamlObject);
 
-  return {
-    type: HastTypeNames.root,
-    children: [ast],
-    data: {
-      comment: yamlObject.comment,
-      commentBefore: yamlObject.commentBefore,
-    },
+  const layoutRoot = root([ast]);
+  layoutRoot.data = {
+    comment: yamlObject.comment,
+    commentBefore: yamlObject.commentBefore,
   };
+
+  return layoutRoot;
 };
 
 function getPropertiesInYamlObj(
