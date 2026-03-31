@@ -1,5 +1,6 @@
 {
   "name": "@localizesh/processor-yaml",
+  "license": "Apache-2.0",
   "repository": "localizesh/processor-yaml",
   "type": "module",
   "main": "dist/index.js",
@@ -27,6 +28,6 @@
     "typescript": "^5.8.2"
   },
   "peerDependencies": {
-    "@localizesh/sdk": "^0.3.2"
+    "@localizesh/sdk": "^0.3.4"
   }
 }
