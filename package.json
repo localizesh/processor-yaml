@@ -1,5 +1,6 @@
 {
   "name": "@localizesh/processor-yaml",
+  "license": "Apache-2.0",
   "repository": "localizesh/processor-yaml",
   "type": "module",
   "main": "dist/index.js",
